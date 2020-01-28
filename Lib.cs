@@ -6,83 +6,93 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace ImageAnalyser
 {
-    class Program
+    public class Program
     {
         static AmazonRekognitionClient _client;
 
-          static void Entry()
+          public MemoryStream Entry(string url)
           {
+            MemoryStream stream = new MemoryStream();
             try
             {
                 //Replace YOUR-AWS-ACCESS-KEY, YOUR-AWS-SECRET-ACCESS-KEY and RegionEndpoint with your AWS Credentials and Region
                 _client = new AmazonRekognitionClient("AKIAJ6IHP3GJDFIV5YFA", "8FL7B+82iJ83nRfvxofKYLBA6XLAoYfvKU/EyamA", RegionEndpoint.USEast1);
-                string picPath = string.Empty;
-                bool running = true;
+                //bool running = true;
+                byte[] image;
+               
+                //while (running)
+                //{
+                    //Console.Clear();
+                    //Console.WriteLine("Type the desired option's number:");
+                    //Console.WriteLine("1 - Detect Faces");
+                    //Console.WriteLine("2 - Detect Objects and Scenes");
+                    //Console.WriteLine("3 - Detect Text");
+                    //Console.WriteLine("4 - Start Detecting Objects and Scenes on video");
+                    //Console.WriteLine("5 - Get Detected Objects and Scenes on video");
+                    //var input = Console.ReadLine();
 
-                while (running)
-                {
-                    Console.Clear();
-                    Console.WriteLine("Type the desired option's number:");
-                    Console.WriteLine("1 - Detect Faces");
-                    Console.WriteLine("2 - Detect Objects and Scenes");
-                    Console.WriteLine("3 - Detect Text");
-                    Console.WriteLine("4 - Start Detecting Objects and Scenes on video");
-                    Console.WriteLine("5 - Get Detected Objects and Scenes on video");
-                    var input = Console.ReadLine();
-
-                    if (input == "4")
-                        DetectLabelsVideo();
-                    else if (input == "5")
-                    {
-                        Console.WriteLine("Please provide JobId");
-                        GetDetectedLabelsVideo(Console.ReadLine());
-                    }
-                    else
-                    {
-                        Console.WriteLine("Please provide picture's full path");
-                        picPath = Console.ReadLine();
-                        byte[] image = File.ReadAllBytes(picPath);
-                        using (var stream = new MemoryStream(image))
+                    //if (input == "4")
+                    //    DetectLabelsVideo();
+                    //else if (input == "5")
+                    //{
+                    //    Console.WriteLine("Please provide JobId");
+                    //    GetDetectedLabelsVideo(Console.ReadLine());
+                    //}
+                    //else
+                    //{
+                       // Console.WriteLine("Please provide picture's full path");
+                        using (var webClient = new WebClient())
                         {
-                            if (int.TryParse(input, out int result))
-                            {
-                                switch (result)
-                                {
-                                    case 1:
-                                        DetectFaces(stream);
-                                        break;
-                                    case 2:
-                                        DetectLabels(stream);
-                                        break;
-                                    case 3:
-                                        DetectText(stream);
-                                        break;
-                                    default:
-                                        Console.WriteLine("Invalid input, Bye");
-                                        break;
-                                }
-                            }
-                            else
-                                Console.WriteLine("Invalid input, Bye");
+                          image = webClient.DownloadData(url);
                         }
-                    }
-                    Console.WriteLine();
-                    Console.WriteLine("Run again? Y/N");
-                    var input2 = Console.ReadLine();
-                    running = input2.ToLower() == "y" ? true : false;
-                }
+               stream = new MemoryStream(image);
+                       // byte[] image = File.ReadAllBytes(picPath);
+                        //using (var stream = new MemoryStream(image))
+                        //{
+                        //    if (int.TryParse(input, out int result))
+                        //    {
+                        //        switch (result)
+                        //        {
+                        //            case 1:
+                        //                DetectFaces(stream);
+                        //                break;
+                        //            case 2:
+                        //                lb = DetectLabels(stream);
+                        //                break;
+                        //            case 3:
+                        //                DetectText(stream);
+                        //                break;
+                        //            default:
+                        //                Console.WriteLine("Invalid input, Bye");
+                        //                break;
+                        //        }
+                        //    }
+                        //    else
+                        //        Console.WriteLine("Invalid input, Bye");
+                        //}
+                    //}
+                    //Console.WriteLine();
+                    //Console.WriteLine("Run again? Y/N");
+                    //var input2 = Console.ReadLine();
+                    //running = input2.ToLower() == "y" ? true : false;
+                    
+                //}
+                return stream;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
+             return stream;
             }
-        }
-
-        static void DetectFaces(MemoryStream stream)
+    
+    }
+        // For Image analysis
+        public List<FaceDetail> DetectFaces(MemoryStream stream)
         {
             var response = _client.DetectFacesAsync(new DetectFacesRequest
             {
@@ -126,11 +136,14 @@ namespace ImageAnalyser
             }
 
             LogResponse(GetIndentedJson(response), "DetectLabels");
+      return response.FaceDetails;
         }
-        static void DetectLabels(MemoryStream stream)
+
+        // For Image analysis
+        public List<Label> DetectLabels(MemoryStream stream)
         {
             Console.WriteLine("Minimum confidence level? (0 - 100)");
-            var minConfidence = float.Parse(Console.ReadLine());
+            var minConfidence = 70;//float.Parse(Console.ReadLine());
 
             Stopwatch watch = new Stopwatch();
             watch.Start();
@@ -154,11 +167,44 @@ namespace ImageAnalyser
             }
 
             LogResponse(GetIndentedJson(response), "DetectLabels");
+            return response.Labels;
         }
-        static void DetectLabelsVideo()
+
+    // For Image analysis
+    public List<TextDetection> DetectText(MemoryStream stream)
+    {
+      DetectTextRequest detectTextRequest = new DetectTextRequest()
+      {
+        Image = new Image()
+        {
+          Bytes = stream
+        }
+      };
+
+      DetectTextResponse response = _client.DetectTextAsync(detectTextRequest).Result;
+      Console.WriteLine($"Texts Found: {response.TextDetections.Count}");
+      Console.WriteLine();
+
+      foreach (TextDetection text in response.TextDetections)
+      {
+        Console.WriteLine("text: " + text.DetectedText);
+        Console.WriteLine("Confidence: " + text.Confidence);
+        Console.WriteLine("Type: " + text.Type);
+        Console.WriteLine();
+      }
+
+      Console.WriteLine();
+      Console.WriteLine("JSON response:");
+      Console.WriteLine();
+      LogResponse(JsonConvert.SerializeObject(response, Formatting.Indented), "DetectText");
+      return response.TextDetections;
+    }
+
+    // For Video Analysis
+    static void DetectLabelsVideo()
         {
             Console.WriteLine("Minimum confidence level? (0 - 100)");
-            var minConfidence = float.Parse(Console.ReadLine());
+      var minConfidence = 70;// float.Parse(Console.ReadLine());
 
             Console.WriteLine("Bucket name:");
             var bucketName = Console.ReadLine();
@@ -183,6 +229,8 @@ namespace ImageAnalyser
 
             LogResponse(GetIndentedJson(response), "DetectLabelsVideo");
         }
+
+        // For Video Analysis
         static void GetDetectedLabelsVideo(string jobId)
         {
             var response = _client.GetLabelDetectionAsync(new GetLabelDetectionRequest
@@ -201,34 +249,8 @@ namespace ImageAnalyser
 
             LogResponse(GetIndentedJson(response), "GetDetectedLabelsVideo");
         }
-        static void DetectText(MemoryStream stream)
-        {
-            DetectTextRequest detectTextRequest = new DetectTextRequest()
-            {
-                Image = new Image()
-                {
-                    Bytes = stream
-                }
-            };
 
-            DetectTextResponse response = _client.DetectTextAsync(detectTextRequest).Result;
-            Console.WriteLine($"Texts Found: {response.TextDetections.Count}");
-            Console.WriteLine();
-
-            foreach (TextDetection text in response.TextDetections)
-            {
-                Console.WriteLine("text: " + text.DetectedText);
-                Console.WriteLine("Confidence: " + text.Confidence);
-                Console.WriteLine("Type: " + text.Type);
-                Console.WriteLine();
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("JSON response:");
-            Console.WriteLine();
-            LogResponse(JsonConvert.SerializeObject(response, Formatting.Indented), "DetectText");
-
-        }
+        
         static void LogResponse(string text, string method)
         {
             string path = $@"..\..\..\..\{method}.txt";
