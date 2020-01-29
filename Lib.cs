@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-
+using System.Threading;
 namespace ImageAnalyser
 {
     public class Program
@@ -195,22 +195,23 @@ namespace ImageAnalyser
 
       Console.WriteLine();
       Console.WriteLine("JSON response:");
-      Console.WriteLine();
+      //Console.WriteLine();
       LogResponse(JsonConvert.SerializeObject(response, Formatting.Indented), "DetectText");
       return response.TextDetections;
     }
 
     // For Video Analysis
-    static void DetectLabelsVideo()
+    public string DetectLabelsVideo(string bucketName, string fileName)
         {
-            Console.WriteLine("Minimum confidence level? (0 - 100)");
+           // Console.WriteLine("Minimum confidence level? (0 - 100)");
+
       var minConfidence = 70;// float.Parse(Console.ReadLine());
 
-            Console.WriteLine("Bucket name:");
-            var bucketName = Console.ReadLine();
+            //Console.WriteLine("Bucket name:");
+            //var bucketName = Console.ReadLine();
 
-            Console.WriteLine("File name:");
-            var fileName = Console.ReadLine();
+            //Console.WriteLine("File name:");
+            //var fileName = Console.ReadLine();
 
             var response = _client.StartLabelDetectionAsync(new StartLabelDetectionRequest
             {
@@ -228,10 +229,11 @@ namespace ImageAnalyser
             Console.WriteLine($"JobId: {response.JobId}");
 
             LogResponse(GetIndentedJson(response), "DetectLabelsVideo");
+      return response.JobId;
         }
 
         // For Video Analysis
-        static void GetDetectedLabelsVideo(string jobId)
+        public List<LabelDetection> GetDetectedLabelsVideo(string jobId)
         {
             var response = _client.GetLabelDetectionAsync(new GetLabelDetectionRequest
             {
@@ -241,13 +243,21 @@ namespace ImageAnalyser
             Console.WriteLine($"Job Status: {response.JobStatus}");
             Console.WriteLine($"Objects and Scenes Found: {response.Labels.Count}");
             Console.WriteLine();
-
-            foreach (var label in response.Labels)
+          if(response.JobStatus.Value.ToUpper()== "IN_PROGRESS")
+          { Thread.Sleep(10000);
+         response = _client.GetLabelDetectionAsync(new GetLabelDetectionRequest
+        {
+          JobId = jobId
+        }).Result;
+      }
+      
+      foreach (var label in response.Labels)
             {
                 Console.WriteLine($"{label.Label.Name} at {label.Timestamp}        {label.Label.Confidence} %");
             }
 
             LogResponse(GetIndentedJson(response), "GetDetectedLabelsVideo");
+            return response.Labels;
         }
 
         

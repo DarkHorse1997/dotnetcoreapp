@@ -1,7 +1,7 @@
 @{
   ViewData["Title"] = "ImageAnalyzer";
 }
-@model app.Models.SubscribeModel
+@model app.Models.ImageModel
 <h2>@ViewData["Title"]</h2>
 <h3>@ViewData["Message"]</h3>
 
@@ -12,46 +12,96 @@
     <div class="content-wrapper">
       <div class="row material2">
         <div class="col-xs-1 col-sm-1 col-lg-1 col-md-1">
-         <label>URL</label>
+          <label>URL</label>
         </div>
         <div class="col-xs-1 col-sm-1 col-lg-5 col-md-1">
-          @Html.TextBoxFor(model => model.Url, new { style = "width:400px;" } )
+          @Html.TextBoxFor(model => model.Url, new { style = "width:400px;" })
         </div>
         <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1">
           <button id="btnAnalyze" type="submit">Analyze Image</button>
         </div>
       </div>
-    
+  
       @if (Model != null)
       {
-        @if (Model.Labels.Count() > 0 && Model.Labels != null)
-        {
-          <div class="row material2">
-            <div class="col-xs-6 col-sm-6 col-lg-6 col-md-3">
-              <table>
 
-                @{ foreach (var lbl in Model.Labels)
+        <div class="row material2">
+          <div class="col-xs-6 col-sm-6 col-lg-6 col-md-3" style="overflow-x:auto; margin:20px">
+            <table>
+              @{ if (Model.Labels != null && Model.Labels.Count > 0)
+                {
+                  foreach (var lbl in Model.Labels)
                   {
                     <tr>
-                      <td class="col-lg-1">@Html.DisplayFor(m => lbl.Name)</td>
-                      <td class="col-lg-1">@Html.DisplayFor(m => lbl.Confidence)</td>
+                      <td class="col-lg-1" colspan="3">@Html.DisplayFor(m => lbl.Name)</td>
+                      <td class="col-lg-1">@Html.DisplayFor(m => lbl.Confidence)%</td>
                     </tr>
                   }
                 }
-              </table>
-            </div>
-            <div class="col-xs-6 col-sm-6 col-lg-3 col-md-3">
-              <table>
-                <tr>
-                  <td>
-                    <img src=@Model.Url height="200" width="200" />
-                  </td>
-                </tr>
-              </table>
-            </div>
+
+              }
+              @*}*@
+
+              @if (Model.FaceDetails != null)
+              {
+                @foreach (var faceDetail in Model.FaceDetails)
+                {
+                  <tr>
+                    <td class="col-lg-1" colspan="3">Appears to be            @Html.DisplayFor(m => faceDetail.Gender.Value.Value)</td>
+                    <td class="col-lg-1">@Html.DisplayFor(m => faceDetail.Gender.Confidence)%</td>
+                  </tr>
+                  @if (faceDetail.Eyeglasses.Value)
+                  {
+                    <tr>
+                      <td class="col-lg-1">Wearing glasses @Html.DisplayFor(m => faceDetail.Beard.Confidence)%</td>
+                    </tr>
+                  }
+                  @if (faceDetail.Sunglasses.Value)
+                  {
+                    <tr>
+                      <td><label>Wearing Sunglasses</label></td>
+                      <td class="col-lg-1">@Html.DisplayFor(m => faceDetail.Sunglasses.Confidence)%</td>
+                    </tr>
+                  }
+                  <tr>
+                    <td class="col-lg-1" colspan="3">Age Range  </td>
+                    <td class="col-lg-1">@Html.DisplayFor(m => faceDetail.AgeRange.Low) - @Html.DisplayFor(m => faceDetail.AgeRange.High) old</td>
+                  </tr>
+                }
+              }
+
+
+
+              @{ if (Model.TextDetections != null)
+                {
+                  foreach (var text in Model.TextDetections)
+                  {
+                    <tr>
+                      <td class="col-lg-1" colspan="3">Text:</td>
+                      <td class="col-lg-1">@Html.DisplayFor(m => text.DetectedText)</td>
+
+                    </tr>
+                    <tr>
+                      <td class="col-lg-1" colspan="3">Confidence:</td>
+                      <td class="col-lg-1">@Html.DisplayFor(m => text.Confidence)%</td>
+                    </tr>
+                    <tr>
+                      <td class="col-lg-1" colspan="3">Type:</td>
+                      <td class="col-lg-1">@Html.DisplayFor(m => text.Type.Value)</td>
+                    </tr>
+                  }
+                }
+
+              }
+            </table>
           </div>
-        }
+          <div class="col-xs-6 col-sm-6 col-lg-3 col-md-3" style="display:table-cell; vertical-align:middle; text-align:center">
+            <img src=@Model.Url height="400" width="400" />
+          </div>
+        </div>
+
       }
+
     </div>
   </div>
 

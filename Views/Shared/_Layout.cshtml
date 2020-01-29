@@ -35,7 +35,7 @@
                 <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
                 <li><a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
                 <li><a asp-area="" asp-controller="Home" asp-action="ImageAnalyzer">Image Analyzer</a></li>
-                <li><a asp-area="" asp-controller="Home" asp-action="Video">Video</a></li>
+                <li><a asp-area="" asp-controller="Home" asp-action="Video">Video Analyzer</a></li>
               </ul>
             </div>
         </div>
@@ -46,11 +46,13 @@
     <div class="container body-content">
         @RenderBody()
         <hr />
-        <footer>
-            <p>&copy; 2018 - app</p>
-        </footer>
+      
     </div>
-
+    <div>
+      <footer class="fixed-footer">
+        <div class="container">&copy; 2018 - app</div>
+      </footer>
+    </div>
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>

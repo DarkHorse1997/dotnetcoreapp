@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using Amazon.Rekognition.Model;
-using Newtonsoft.Json;
 
 namespace app.Models
 {

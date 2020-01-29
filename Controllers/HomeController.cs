@@ -9,11 +9,13 @@ using Amazon.Rekognition.Model;
 using Newtonsoft.Json;
 using System.IO;
 
+
 namespace app.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+    MemoryStream stream = new MemoryStream();
+    public IActionResult Index()
         {
             return View();
         }
@@ -43,33 +45,52 @@ namespace app.Controllers
 
           return View();
         }
+
         public IActionResult Video()
         {
           ViewData["Message"] = "Your Video page.";
 
           return View();
         }
+        public IActionResult AnalyzeVideo(VideoModel model)
+        {
+          string jobId = string.Empty;
+          ViewData["Message"] = "Your Video page.";
+          ImageAnalyser.Program ps = new ImageAnalyser.Program();
+          //jobId = "b5e4788917c49e768c29a6f9f242f2f1132419bc37fb54cc8f20d677fbeb9d9e";
+          jobId = ps.DetectLabelsVideo(model.bucketName, model.fileName);
+          
+          List<LabelDetection> Labels = ps.GetDetectedLabelsVideo(jobId);
+          model.Labels = Labels;
+          return View("Video", model);
+    }
 
         [HttpPost]
-        public ActionResult AnalyzeImage(SubscribeModel model)
+        public ActionResult AnalyzeImage(ImageModel model)
         {
-          if (ModelState.IsValid)
+          try
           {
-        //TODO: SubscribeUser(model.Email);
-            model.isAnalyse = true;
-       
+            ImageAnalyser.Program ps = new ImageAnalyser.Program();
+            stream = ps.Entry(model.Url);
+            List<FaceDetail> FaceDetails = ps.DetectFaces(stream);
+            model.FaceDetails = FaceDetails;
+            List<Label> Labels = ps.DetectLabels(stream);
+            model.Labels = Labels;
+            List<TextDetection> TextDetections = ps.DetectText(stream);
+            model.TextDetections = TextDetections;
+            return View("ImageAnalyzer", model);
           }
-
-        ImageModel md = new ImageModel();
-        md.Url = model.Url;
-        md.isAnalyse = model.isAnalyse;
-        return View("DetectImage", md);
+          catch (Exception ex)
+          {
+        return View("~/Views/Shared/Error.cshtml");
+      }
+          
         }
 
       [HttpPost]
       public ActionResult DetectImage(ImageModel model, string submitButton)
       {
-        MemoryStream stream = new MemoryStream();
+       
         if (ModelState.IsValid)
         {
           //TODO: SubscribeUser(model.Email);

@@ -37,8 +37,7 @@ body {
 }
 
 .content-wrapper {
-  width: 90%;
-  min-width: 85px;
+margin:20px;
 }
 
 table {
@@ -48,4 +47,24 @@ table {
 td {
   height: 50px;
  
+}
+
+.fixed-footer {
+  width: 100%;
+  position: fixed;
+  background: #333;
+  padding: 15px 15px;
+  color: #9d9d9d;
+  height:50px;
+  font-size:18px;
+  line-height:20px;
+}
+
+.fixed-footer {
+  bottom: 0;
+}
+
+.container {
+  width: 80%;
+  margin: 0 auto; /* Center the DIV horizontally */
 }
