@@ -1,4 +1,4 @@
-@{
+@{ 
   ViewData["Title"] = "ImageAnalyzer";
 }
 @model app.Models.ImageModel
@@ -10,44 +10,61 @@
  
   <div class="col-lg-12 control-section">
     <div class="content-wrapper">
-      <div class="row material2">
-        <div class="col-xs-1 col-sm-1 col-lg-1 col-md-1">
+      <div class="row">
+        <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1">
           <label>URL</label>
         </div>
-        <div class="col-xs-1 col-sm-1 col-lg-5 col-md-1">
-          @Html.TextBoxFor(model => model.Url, new { style = "width:400px;" })
+        <div class="col-xs-1 col-sm-5 col-lg-5 col-md-1">
+          @Html.TextBoxFor(model => model.Url, new { style = "width:400px;" , required="required"})
         </div>
+      </div>
+      <br/>
+      <div class="row">
         <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1">
+          <label>Target Object</label>
+        </div>
+        <div class="col-xs-1 col-sm-1 col-lg-5 col-md-1">
+          @Html.TextBoxFor(model => model.Target, new { style = "width:400px;" , required="required"})
+        </div>
+        <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1" style="font-size:16px;">
+          <strong>@Html.DisplayFor(m => m.Message)</strong>
+        </div>
+      </div>
+      <br/>
+      <div class="row">
+        <div class="col-xs-2 col-sm-2 col-lg-2 col-md-2">
           <button id="btnAnalyze" type="submit">Analyze Image</button>
         </div>
       </div>
-  
       @if (Model != null)
       {
 
         <div class="row material2">
           <div class="col-xs-6 col-sm-6 col-lg-6 col-md-3" style="overflow-x:auto; margin:20px">
-            <table>
-              @{ if (Model.Labels != null && Model.Labels.Count > 0)
-                {
-                  foreach (var lbl in Model.Labels)
-                  {
-                    <tr>
-                      <td class="col-lg-1" colspan="3">@Html.DisplayFor(m => lbl.Name)</td>
-                      <td class="col-lg-1">@Html.DisplayFor(m => lbl.Confidence)%</td>
-                    </tr>
-                  }
-                }
-
-              }
-              @*}*@
-
-              @if (Model.FaceDetails != null)
+            @{ if (Model.Labels != null && Model.Labels.Count > 0)
               {
+                <h4>
+                  <label>Label Analysis:</label>
+                </h4>
+                <table>
+                @foreach (var lbl in Model.Labels)
+                {
+                <tr>
+                  <td class="col-lg-1" colspan="3">@Html.DisplayFor(m => lbl.Name)</td>
+                  <td class="col-lg-1">@Html.DisplayFor(m => lbl.Confidence)%</td>
+                </tr>
+                }
+              </table>
+              }
+            }
+            @if (Model.FaceDetails != null && Model.FaceDetails.Count > 0)
+            {
+              <h4><label>Face Analysis:</label></h4>
+              <table>
                 @foreach (var faceDetail in Model.FaceDetails)
                 {
                   <tr>
-                    <td class="col-lg-1" colspan="3">Appears to be            @Html.DisplayFor(m => faceDetail.Gender.Value.Value)</td>
+                    <td class="col-lg-1" colspan="3">Appears to be @Html.DisplayFor(m => faceDetail.Gender.Value.Value)</td>
                     <td class="col-lg-1">@Html.DisplayFor(m => faceDetail.Gender.Confidence)%</td>
                   </tr>
                   @if (faceDetail.Eyeglasses.Value)
@@ -68,32 +85,42 @@
                     <td class="col-lg-1">@Html.DisplayFor(m => faceDetail.AgeRange.Low) - @Html.DisplayFor(m => faceDetail.AgeRange.High) old</td>
                   </tr>
                 }
-              }
+                <tr>
+                  <td class="col-lg-1" colspan="3">Appears to be @Html.DisplayFor(m => m.emotionName)</td>
+                  <td class="col-lg-1">@Html.DisplayFor(m => m.emotionConfidence)%</td>
+                </tr>
+                
+              </table>
+            }
 
 
-
-              @{ if (Model.TextDetections != null)
+            @{ if (Model.TextDetections != null && Model.TextDetections.Count >0)
+              {
+              <h4>
+                <label>Text Analysis:</label>
+              </h4>
+              <table>
+                @foreach (var text in Model.TextDetections)
                 {
-                  foreach (var text in Model.TextDetections)
-                  {
-                    <tr>
-                      <td class="col-lg-1" colspan="3">Text:</td>
-                      <td class="col-lg-1">@Html.DisplayFor(m => text.DetectedText)</td>
+                  <tr>
+                    <td class="col-lg-1" colspan="3">Text:</td>
+                    <td class="col-lg-1">@Html.DisplayFor(m => text.DetectedText)</td>
 
-                    </tr>
-                    <tr>
-                      <td class="col-lg-1" colspan="3">Confidence:</td>
-                      <td class="col-lg-1">@Html.DisplayFor(m => text.Confidence)%</td>
-                    </tr>
-                    <tr>
-                      <td class="col-lg-1" colspan="3">Type:</td>
-                      <td class="col-lg-1">@Html.DisplayFor(m => text.Type.Value)</td>
-                    </tr>
-                  }
+                  </tr>
+                  <tr>
+                    <td class="col-lg-1" colspan="3">Confidence:</td>
+                    <td class="col-lg-1">@Html.DisplayFor(m => text.Confidence)%</td>
+                  </tr>
+                  <tr>
+                    <td class="col-lg-1" colspan="3">Type:</td>
+                    <td class="col-lg-1">@Html.DisplayFor(m => text.Type.Value)</td>
+                  </tr>
                 }
-
+              </table>
               }
-            </table>
+
+            }
+
           </div>
           <div class="col-xs-6 col-sm-6 col-lg-3 col-md-3" style="display:table-cell; vertical-align:middle; text-align:center">
             <img src=@Model.Url height="400" width="400" />

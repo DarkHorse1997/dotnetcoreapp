@@ -70,64 +70,52 @@ namespace app.Controllers
         {
           try
           {
+            string faceMessage = String.Empty;
+            string labelMessage = String.Empty;
+            string textMessage = String.Empty;
             ImageAnalyser.Program ps = new ImageAnalyser.Program();
             stream = ps.Entry(model.Url);
-            List<FaceDetail> FaceDetails = ps.DetectFaces(stream);
+            List<FaceDetail> FaceDetails = ps.DetectFaces(stream, model.Target, out faceMessage);
             model.FaceDetails = FaceDetails;
-            List<Label> Labels = ps.DetectLabels(stream);
+            List <Label> Labels = ps.DetectLabels(stream, model.Target, out labelMessage);
             model.Labels = Labels;
-            List<TextDetection> TextDetections = ps.DetectText(stream);
+            List<TextDetection> TextDetections = ps.DetectText(stream, model.Target, out textMessage);
             model.TextDetections = TextDetections;
+            int faceCounter = 1;
+            if (FaceDetails != null && FaceDetails.Count > 0)
+            {
+              foreach (var faceDetail in model.FaceDetails)
+              {
+                float emotionConfidence = 0;
+                string emotionName = string.Empty;
+                //Determines dominant emotion
+                foreach (var emotion in faceDetail.Emotions)
+                {
+                  if (emotion.Confidence > emotionConfidence)
+                  {
+                    emotionConfidence = emotion.Confidence;
+                    emotionName = emotion.Type;
+                  }
+                }
+                model.emotionConfidence = emotionConfidence;
+                model.emotionName = emotionName;
+                faceCounter++;
+              }
+            }
+            model.Message = faceMessage == "" ? (labelMessage == "" ? (textMessage == "" ? model.Target + " does not found" : textMessage) : labelMessage) : faceMessage;
+            FaceDetails = null;
+            TextDetections = null;
+            Labels = null;
             return View("ImageAnalyzer", model);
           }
           catch (Exception ex)
           {
-        return View("~/Views/Shared/Error.cshtml");
-      }
+            return View("~/Views/Shared/Error.cshtml");
+          }
           
         }
 
-      [HttpPost]
-      public ActionResult DetectImage(ImageModel model, string submitButton)
-      {
-       
-        if (ModelState.IsValid)
-        {
-          //TODO: SubscribeUser(model.Email);
-          //  model.isAnalyse = true;
-        }
-      ImageAnalyser.Program ps = new ImageAnalyser.Program();
-      stream = ps.Entry(model.Url);
-      switch (submitButton)
-      {
-        case "Detect Faces":
-         
-          List<FaceDetail> FaceDetails = ps.DetectFaces(stream);
-          model.FaceDetails = FaceDetails;
-          model.Labels = null;
-          model.TextDetections = null;
-          break;
-        case "Detect Objects and Scenes":
-          ViewBag.Message = "The operation was cancelled!";
-          List<Label> Labels = ps.DetectLabels(stream);
-          model.Labels = Labels;
-          model.FaceDetails = null;
-          model.TextDetections = null;
-          break;
-        case "Detect Text":
-          ViewBag.Message = "Customer saved successfully!";
-          List<TextDetection> TextDetections = ps.DetectText(stream);
-          model.TextDetections = TextDetections;
-          model.FaceDetails = null;
-          model.Labels = null;
-          break;
-      }
-     
-        
-       
-        return View("DetectImage", model);
-      }
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

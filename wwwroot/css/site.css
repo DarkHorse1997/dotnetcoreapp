@@ -68,3 +68,13 @@ td {
   width: 80%;
   margin: 0 auto; /* Center the DIV horizontally */
 }
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+img {
+  padding: 5px;
+  border: 8px solid #999999;
+  background-color: #e6e6e6;
+}

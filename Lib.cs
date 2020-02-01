@@ -9,13 +9,14 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
+using app.Models;
+
 namespace ImageAnalyser
 {
     public class Program
     {
         static AmazonRekognitionClient _client;
-
-          public MemoryStream Entry(string url)
+        public MemoryStream Entry(string url)
           {
             MemoryStream stream = new MemoryStream();
             try
@@ -92,17 +93,16 @@ namespace ImageAnalyser
     
     }
         // For Image analysis
-        public List<FaceDetail> DetectFaces(MemoryStream stream)
+        public List<FaceDetail> DetectFaces(MemoryStream stream, string target, out string message)
         {
+            string outMessage = "";
             var response = _client.DetectFacesAsync(new DetectFacesRequest
             {
                 Attributes = { "ALL" },
                 Image = new Image { Bytes = stream }
             }).Result;
 
-            Console.WriteLine($"Faces found: {response.FaceDetails.Count}");
-            Console.WriteLine();
-            int faceCounter = 1;
+           int faceCounter = 1;
             foreach (var faceDetail in response.FaceDetails)
             {
                 float emotionConfidence = 0;
@@ -116,33 +116,21 @@ namespace ImageAnalyser
                         emotionName = emotion.Type;
                     }
                 }
-
-                Console.WriteLine($"Face {faceCounter}:");
-                Console.WriteLine($"");
-                Console.WriteLine($"Appears to be {faceDetail.Gender.Value}       {faceDetail.Gender.Confidence} %");
-                if (faceDetail.Beard.Value)
-                    Console.WriteLine($"Appears to have a beard                       {faceDetail.Beard.Confidence} %");
-                if (faceDetail.Eyeglasses.Value)
-                    Console.WriteLine($"Wearing glasses                               {faceDetail.Eyeglasses.Confidence} %");
-                if (faceDetail.Sunglasses.Value)
-                    Console.WriteLine($"Wearing Sunglasses                            {faceDetail.Sunglasses.Confidence} %");
-                Console.WriteLine($"Age Range                                     {faceDetail.AgeRange.Low} - {faceDetail.AgeRange.High} old");
-                Console.WriteLine($"Appears to be {emotionName}                   {emotionConfidence} %");
-
-                Console.WriteLine();
-                Console.WriteLine();
-
+                if (faceDetail.Gender.Value.ToString().ToLower() == target.ToLower())
+                {
+                  outMessage = target + " found";
+                }
                 faceCounter++;
-            }
-
+              }
+            message = outMessage;
             LogResponse(GetIndentedJson(response), "DetectLabels");
-      return response.FaceDetails;
+            return response.FaceDetails;
         }
 
         // For Image analysis
-        public List<Label> DetectLabels(MemoryStream stream)
+        public List<Label> DetectLabels(MemoryStream stream, string target, out string message)
         {
-            Console.WriteLine("Minimum confidence level? (0 - 100)");
+            string outMessage = "";
             var minConfidence = 70;//float.Parse(Console.ReadLine());
 
             Stopwatch watch = new Stopwatch();
@@ -157,22 +145,29 @@ namespace ImageAnalyser
                 }
             }).Result;
             watch.Stop();
-            Console.WriteLine($"Elapsed Time: { watch.Elapsed }");
-            Console.WriteLine($"Objects and Scenes Found: {response.Labels.Count}:");
-            Console.WriteLine();
+            //Console.WriteLine($"Elapsed Time: { watch.Elapsed }");
+            //Console.WriteLine($"Objects and Scenes Found: {response.Labels.Count}:");
+            //Console.WriteLine();
 
             foreach (var label in response.Labels)
             {
-                Console.WriteLine($"{label.Name}                 {label.Confidence} %");
+                //Console.WriteLine($"{label.Name}                 {label.Confidence} %");
+                if (label.Name.ToLower() == target.ToLower())
+                {
+                  outMessage = target + " found";
+                }
+        
             }
-
+            message = outMessage;
+    
             LogResponse(GetIndentedJson(response), "DetectLabels");
             return response.Labels;
         }
 
     // For Image analysis
-    public List<TextDetection> DetectText(MemoryStream stream)
+    public List<TextDetection> DetectText(MemoryStream stream, string target, out string message)
     {
+      string outMessage = "";
       DetectTextRequest detectTextRequest = new DetectTextRequest()
       {
         Image = new Image()
@@ -182,28 +177,36 @@ namespace ImageAnalyser
       };
 
       DetectTextResponse response = _client.DetectTextAsync(detectTextRequest).Result;
-      Console.WriteLine($"Texts Found: {response.TextDetections.Count}");
-      Console.WriteLine();
+      //Console.WriteLine($"Texts Found: {response.TextDetections.Count}");
+      //Console.WriteLine();
 
       foreach (TextDetection text in response.TextDetections)
       {
-        Console.WriteLine("text: " + text.DetectedText);
-        Console.WriteLine("Confidence: " + text.Confidence);
-        Console.WriteLine("Type: " + text.Type);
-        Console.WriteLine();
-      }
+        //Console.WriteLine("text: " + text.DetectedText);
+        //Console.WriteLine("Confidence: " + text.Confidence);
+        //Console.WriteLine("Type: " + text.Type);
+        //Console.WriteLine();
+        if (text.DetectedText.ToLower() == target.ToLower() || text.Type.ToString().ToLower() == target.ToLower())
+        {
+          outMessage = target + " found";
+        }
 
-      Console.WriteLine();
-      Console.WriteLine("JSON response:");
+      }
+      message = outMessage;
+    
       //Console.WriteLine();
-      LogResponse(JsonConvert.SerializeObject(response, Formatting.Indented), "DetectText");
+      //Console.WriteLine("JSON response:");
+      //Console.WriteLine();
+     LogResponse(JsonConvert.SerializeObject(response, Formatting.Indented), "DetectText");
       return response.TextDetections;
     }
 
     // For Video Analysis
     public string DetectLabelsVideo(string bucketName, string fileName)
         {
-           // Console.WriteLine("Minimum confidence level? (0 - 100)");
+      _client = new AmazonRekognitionClient("AKIAJ6IHP3GJDFIV5YFA", "8FL7B+82iJ83nRfvxofKYLBA6XLAoYfvKU/EyamA", RegionEndpoint.USEast1);
+
+      // Console.WriteLine("Minimum confidence level? (0 - 100)");
 
       var minConfidence = 70;// float.Parse(Console.ReadLine());
 
