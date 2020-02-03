@@ -119,6 +119,7 @@ namespace ImageAnalyser
                 if (faceDetail.Gender.Value.ToString().ToLower() == target.ToLower())
                 {
                   outMessage = target + " found";
+                  
                 }
                 faceCounter++;
               }
@@ -285,5 +286,12 @@ namespace ImageAnalyser
         {
             return JsonConvert.SerializeObject(response, Formatting.Indented);
         }
+
+    static void SendSMS(string msg)
+    {
+
+
+      
     }
+  }
 }
