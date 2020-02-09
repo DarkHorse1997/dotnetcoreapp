@@ -7,6 +7,8 @@ namespace app.Models
   {
     public string bucketName { get; set; }
     public string fileName { get; set; }
+    public string Target { get; set; }
+    public string Message { get; set; }
     public List<LabelDetection> Labels { get; set; }
   }
 }

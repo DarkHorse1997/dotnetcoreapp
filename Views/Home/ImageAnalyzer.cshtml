@@ -26,7 +26,7 @@
         <div class="col-xs-1 col-sm-1 col-lg-5 col-md-1">
           @Html.TextBoxFor(model => model.Target, new { style = "width:400px;" , required="required"})
         </div>
-        <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1" style="font-size:16px;">
+        <div class="col-xs-4 col-sm-4 col-lg-4 col-md-4" style="font-size:16px;">
           <strong>@Html.DisplayFor(m => m.Message)</strong>
         </div>
       </div>
@@ -113,7 +113,7 @@
                   </tr>
                   <tr>
                     <td class="col-lg-1" colspan="3">Type:</td>
-                    <td class="col-lg-1">@Html.DisplayFor(m => text.Type.Value)</td>
+                    <td class="col-lg-1">@Html.DisplayFor(m => text.Type)</td>
                   </tr>
                 }
               </table>

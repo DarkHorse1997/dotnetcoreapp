@@ -10,62 +10,78 @@
 
   <div class="col-lg-12 control-section">
     <div class="content-wrapper">
-      <div class="row material2">
+      <div class="row">
         <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1">
           <label>S3 Bucket Name</label>
         </div>
 
         <div class="col-xs-1 col-sm-1 col-lg-5 col-md-1">
-          @Html.TextBoxFor(model => model.bucketName, new { style = "width:400px;", required="required" })
+          @Html.TextBoxFor(model => model.bucketName, new { style = "width:400px;", required = "required" })
         </div>
       </div>
       <br />
-      <div class="row material2">
+      <div class="row">
         <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1">
           <label>File Name</label>
         </div>
         <div class="col-xs-1 col-sm-1 col-lg-5 col-md-1">
-          @Html.TextBoxFor(model => model.fileName, new { style = "width:400px;" , required="required" })
+          @Html.TextBoxFor(model => model.fileName, new { style = "width:400px;", required = "required" })
         </div>
       </div>
       <br />
-      <div class="row material2">
+      <div class="row">
+        <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1">
+          <label>Target Object</label>
+        </div>
+        <div class="col-xs-1 col-sm-1 col-lg-5 col-md-1">
+          @Html.TextBoxFor(model => model.Target, new { style = "width:400px;", required = "required" })
+        </div>
+        <div class="col-xs-4 col-sm-4 col-lg-4 col-md-4" style="font-size:16px;">
+          <strong>@Html.DisplayFor(m => m.Message)</strong>
+        </div>
+      </div>
+      <br />
+      <div class="row">
         <div class="col-xs-1 col-sm-1 col-lg-2 col-md-1">
           <button id="btnAnalyze" type="submit">Analyze Video</button>
         </div>
       </div>
-      <br/>
+      <br />
       @if (Model != null)
       {
         @if (Model.Labels.Count() > 0 && Model.Labels != null)
-      {
-        <div class="row material2">
-          <div class="col-xs-6 col-sm-6 col-lg-6 col-md-3">
-            <table>
+        {
+          <div class="row material2">
+            <div class="col-xs-6 col-sm-6 col-lg-6 col-md-3">
+              <h4>
+                <label>Objects and Scenes Found:</label>
+              </h4>
+              <table>
 
-              @{ foreach (var lbl in Model.Labels)
-                {
-                  <tr>
-                    <td class="col-lg-1" colspan="3">@Html.DisplayFor(m => lbl.Label.Name)</td>
-                    <td class="col-lg-1">@Html.DisplayFor(m => lbl.Label.Confidence)%</td>
-                  </tr>  
+                @{ foreach (var lbl in Model.Labels)
+                  {
+                    <tr>
+                      <td class="col-lg-1" colspan="3">@Html.DisplayFor(m => lbl.Label.Name)</td>
+                      <td class="col-lg-1">@Html.DisplayFor(m => lbl.Label.Confidence)%</td>
+                    </tr>
+
+                  }
                 }
-              }
-            </table>
+              </table>
+            </div>
+            <div class="col-xs-6 col-sm-6 col-lg-3 col-md-3">
+              <table>
+                <tr>
+                  <td>
+                    <iframe width="420" height="315"
+                            src="https://openhack2020.s3.amazonaws.com/v1.mp4">
+                    </iframe>
+                  </td>
+                </tr>
+              </table>
+            </div>
           </div>
-          <div class="col-xs-6 col-sm-6 col-lg-3 col-md-3">
-            <table>
-              <tr>
-                <td>
-                  <iframe width="420" height="315"
-                          src="https://openhack2020.s3.amazonaws.com/v1.mp4">
-                  </iframe>
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      }
+        }
       }
     </div>
   </div>
