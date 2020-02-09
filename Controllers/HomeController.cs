@@ -41,14 +41,14 @@ namespace app.Controllers
 
     public IActionResult ImageAnalyzer()
     {
-      ViewData["Message"] = "Your Image page.";
+      ViewData["Message"] = "Image Analysis Page";
 
       return View();
     }
 
     public IActionResult Video()
     {
-      ViewData["Message"] = "Your Video page.";
+      ViewData["Message"] = "Video Analysis Page";
 
       return View();
     }
@@ -58,7 +58,7 @@ namespace app.Controllers
       {
         string jobId;
         string labelMessage;
-        ViewData["Message"] = "Your Video page.";
+        ViewData["Message"] = "Video Analysis Page";
         ImageAnalyser.Program ps = new ImageAnalyser.Program();
         //jobId = "b5e4788917c49e768c29a6f9f242f2f1132419bc37fb54cc8f20d677fbeb9d9e";
         jobId = ps.DetectLabelsVideo(model.bucketName, model.fileName);

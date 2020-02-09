@@ -188,11 +188,12 @@ namespace ImageAnalyser
           JobId = jobId
       }).Result;
 
+      
       if (response.JobStatus.Value.ToUpper() == "IN_PROGRESS")
       {
         while (response.JobStatus.Value.ToUpper() != "SUCCEEDED")
         {
-          Thread.Sleep(100000);
+          Thread.Sleep(1000);
           response = _client.GetLabelDetectionAsync(new GetLabelDetectionRequest
           {
             JobId = jobId
@@ -250,7 +251,7 @@ namespace ImageAnalyser
         AmazonSimpleNotificationServiceClient snsClient = new AmazonSimpleNotificationServiceClient(Amazon.RegionEndpoint.USEast1);
         PublishRequest pubRequest = new PublishRequest();
         pubRequest.Message = msg;
-        pubRequest.PhoneNumber = "+16026873441";
+        pubRequest.PhoneNumber = "+919888055959";
         // add optional messageattributes, for example:
         //pubRequest.messageattributes.add("aws.sns.sms.senderid", new messageattributevalue
         //{ stringvalue = "senderid", datatype = "string" });
@@ -261,7 +262,7 @@ namespace ImageAnalyser
       //var snsClient1 = new AmazonSimpleNotificationServiceClient(Amazon.RegionEndpoint.USEast2);
 
       // Publish a message to an Amazon SNS topic.
-      msg = "If you receive this message, publishing a message to an Amazon SNS topic works.";
+      msg = "The object in your watch list has been found in the live stream with ‘90%’ confidence.";
       var topicArn = "arn:aws:sns:us-east-1:735092621658:NotifyMe";
 
       PublishRequest publishRequest = new PublishRequest(topicArn, msg);
